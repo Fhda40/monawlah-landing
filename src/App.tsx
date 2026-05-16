@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback, useId } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
 
@@ -108,7 +108,8 @@ function MonawlahLockup({ color = BRAND.orange, textColor = BRAND.charcoal }: { 
    BRAND PATTERN
    ════════════════════════════════════════════════════════════════════ */
 function LogoPattern({ className = '', color = BRAND.orange, opacity = 0.08 }: { className?: string; color?: string; opacity?: number }) {
-  const id = `mono-pattern-${color.replace('#', '')}-${Math.random().toString(36).slice(2, 6)}`;
+  const uid = useId();
+  const id = `mono-pattern-${color.replace('#', '')}-${uid.replace(/:/g, '')}`;
   return (
     <svg className={className} xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -490,14 +491,16 @@ function DeliveryTicker() {
 /* ════════════════════════════════════════════════════════════════════
    INTERACTIVE PARCEL DRAG
    ════════════════════════════════════════════════════════════════════ */
+const SENDER = { x: 0.15, y: 0.5 };
+const RECEIVER = { x: 0.85, y: 0.5 };
+const toArabicNumerals = (n: number) =>
+  n.toString().replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[+d]);
+
 function MomentOfTrust() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [parcelPos, setParcelPos] = useState({ x: 0.15, y: 0.5 });
+  const [parcelPos, setParcelPos] = useState({ x: SENDER.x, y: SENDER.y });
   const [isDragging, setIsDragging] = useState(false);
   const [delivered, setDelivered] = useState(false);
-
-  const sender = { x: 0.15, y: 0.5 };
-  const receiver = { x: 0.85, y: 0.5 };
 
   const handlePointerDown = (e: React.PointerEvent) => {
     setIsDragging(true);
@@ -513,28 +516,26 @@ function MomentOfTrust() {
   };
   const handlePointerUp = () => {
     setIsDragging(false);
-    const distToReceiver = Math.hypot(parcelPos.x - receiver.x, parcelPos.y - receiver.y);
+    const distToReceiver = Math.hypot(parcelPos.x - RECEIVER.x, parcelPos.y - RECEIVER.y);
     if (distToReceiver < 0.12) {
-      setParcelPos(receiver);
+      setParcelPos(RECEIVER);
       setDelivered(true);
       setTimeout(() => {
-        setParcelPos(sender);
+        setParcelPos(SENDER);
         setDelivered(false);
       }, 2400);
     } else {
-      setParcelPos(sender);
+      setParcelPos(SENDER);
     }
   };
 
   const distance = useMemo(() => {
-    const dx = parcelPos.x - sender.x;
-    const dy = parcelPos.y - sender.y;
+    const dx = parcelPos.x - SENDER.x;
+    const dy = parcelPos.y - SENDER.y;
     return Math.hypot(dx, dy) * 1200;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parcelPos]);
   const price = useMemo(() => Math.round(15 + distance * 0.08), [distance]);
   const eta = useMemo(() => Math.round(25 + distance * 0.12), [distance]);
-  const ar = (n: number) => n.toString().replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[+d]);
 
   return (
     <div className="relative">
@@ -553,19 +554,19 @@ function MomentOfTrust() {
             </linearGradient>
           </defs>
           <line
-            x1={`${sender.x * 100}%`} y1={`${sender.y * 100}%`}
+            x1={`${SENDER.x * 100}%`} y1={`${SENDER.y * 100}%`}
             x2={`${parcelPos.x * 100}%`} y2={`${parcelPos.y * 100}%`}
             stroke="url(#routeGrad)" strokeWidth="2" strokeDasharray="6 6"
           />
           <line
             x1={`${parcelPos.x * 100}%`} y1={`${parcelPos.y * 100}%`}
-            x2={`${receiver.x * 100}%`} y2={`${receiver.y * 100}%`}
+            x2={`${RECEIVER.x * 100}%`} y2={`${RECEIVER.y * 100}%`}
             stroke="white" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="2 4"
           />
         </svg>
 
         {/* Sender */}
-        <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${sender.x * 100}%`, top: `${sender.y * 100}%` }}>
+        <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${SENDER.x * 100}%`, top: `${SENDER.y * 100}%` }}>
           <div className="relative">
             <div className="w-12 h-12 flex items-center justify-center" style={{ backgroundColor: 'rgba(242,91,36,0.15)', border: `2px solid ${BRAND.orange}` }}>
               <div className="w-3 h-3" style={{ backgroundColor: BRAND.orange }} />
@@ -578,7 +579,7 @@ function MomentOfTrust() {
         </div>
 
         {/* Receiver */}
-        <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${receiver.x * 100}%`, top: `${receiver.y * 100}%` }}>
+        <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${RECEIVER.x * 100}%`, top: `${RECEIVER.y * 100}%` }}>
           <motion.div animate={delivered ? { scale: [1, 1.4, 1] } : {}} transition={{ duration: 0.6 }} className="relative">
             <div
               className="w-12 h-12 flex items-center justify-center transition-colors"
@@ -661,7 +662,7 @@ function MomentOfTrust() {
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', fontFamily: '"Inter", sans-serif', fontWeight: 600 }}>{stat.unit}</span>
             </div>
             <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: '4px', fontFamily: '"Tajawal", sans-serif' }} dir="rtl">
-              {ar(parseInt(stat.value))} {stat.unitAr}
+              {toArabicNumerals(parseInt(stat.value))} {stat.unitAr}
             </div>
           </div>
         ))}
@@ -1025,7 +1026,6 @@ function NumbersSection() {
    ════════════════════════════════════════════════════════════════════ */
 export default function App() {
   const [loaded, setLoaded] = useState(false);
-  const heroRef = useRef<HTMLDivElement>(null);
   const [mapScroll, setMapScroll] = useState(0);
   const [time, setTime] = useState('');
 
@@ -1082,7 +1082,7 @@ export default function App() {
       </nav>
 
       {/* HERO */}
-      <section ref={heroRef} className="relative min-h-screen overflow-hidden pt-24" style={{ backgroundColor: BRAND.charcoal }}>
+      <section className="relative min-h-screen overflow-hidden pt-24" style={{ backgroundColor: BRAND.charcoal }}>
         <div className="absolute inset-0">
           <LivingMap scrollProgress={mapScroll} />
           <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(54,52,54,0.5), transparent, ${BRAND.charcoal})` }} />
