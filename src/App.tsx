@@ -50,22 +50,15 @@ function MonawlahMark({ size = 64, color = BRAND.orange, bg = 'transparent' }: {
   return (
     <svg viewBox="0 0 100 100" width={size} height={size} style={{ display: 'block' }}>
       {bg !== 'transparent' && <rect width="100" height="100" fill={bg} />}
+      {/* Speech bubble — tail at bottom-left, matching official brand mark */}
       <path
-        d="M 18 14
-           L 82 14
-           Q 88 14 88 20
-           L 88 70
-           Q 88 76 82 76
-           L 50 76
-           L 38 90
-           L 40 76
-           L 18 76
-           Q 12 76 12 70
-           L 12 20
-           Q 12 14 18 14 Z"
+        d="M22 8 Q8 8 8 22 L8 70 L3 94 L22 88 Q22 92 36 92 L78 92 Q92 92 92 78 L92 22 Q92 8 78 8 Z"
         fill={color}
       />
-      <rect x="38" y="32" width="26" height="26" fill={bg === 'transparent' ? BRAND.cream : bg} />
+      {/* White frame square */}
+      <rect x="15" y="14" width="46" height="46" fill="white" />
+      {/* Inner brand-color square */}
+      <rect x="24" y="23" width="28" height="28" fill={color} />
     </svg>
   );
 }
@@ -116,7 +109,7 @@ function LogoPattern({ className = '', color = BRAND.orange, opacity = 0.08 }: {
         <pattern id={id} x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
           <g opacity={opacity}>
             <path
-              d="M 18 12 L 42 12 Q 46 12 46 16 L 46 38 Q 46 42 42 42 L 28 42 L 22 50 L 23 42 L 18 42 Q 14 42 14 38 L 14 16 Q 14 12 18 12 Z"
+              d="M 18 12 L 42 12 Q 46 12 46 16 L 46 38 Q 46 42 42 42 L 22 42 L 10 52 L 16 42 Q 14 42 14 38 L 14 16 Q 14 12 18 12 Z"
               fill={color}
               transform="translate(0,0) scale(0.7)"
             />
